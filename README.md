@@ -9,5 +9,4 @@ To run this project in your local system you need to create accounts and their a
 2. GraphHopper maps API.
 3. google maps (Optional).
 4. Mysql DB. (DB name= location1);
-
 # Code is in Stage Branch
