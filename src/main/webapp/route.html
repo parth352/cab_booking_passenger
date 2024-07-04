@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Route Directions using GraphHopper</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        /* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 950px;
+    margin-bottom: 10px;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.results, .map-container {
+    width: 100%;
+    margin-top: 20px;
+    text-align: center;
+}
+
+#map {
+    width: 100%;
+    height: 300px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+}
+
+    </style>
+</head>
+<brbody>
+   <!-- <h1>Route Directions using GraphHopper</h1> 	  </br>
+    Total Distnce in KM :<p id="display_distance"> </p> </br>
+    Total Rent in RS :<p id="display_rent"> </p>  -->
+    
+    
+	<div class="container">
+        <h1>Book a Taxi</h1>
+        
+        <div class="map-container">
+            <!-- <h2>Route Map</h2> -->
+            <div id="map"></div>
+        </div>
+        <div class="results">
+            <h2>Travel Details</h2>
+            <p id="travelTime">Total Distance: <span id="display_distance" ></span> KM</p>
+          <!--  <p id="time">Travel time: <span id="travel_time" ></span> Hr</p>  -->  <!-- not displaying this feature as api details are not accurate -->
+            <p id="totalCost">Total Cost: <span id="display_rent" ></span> RS</p>
+        </div>
+
+        
+        <form action="/confirm" method="post" id="bookingForm">
+		<button type="submit">Confirm Ride</button>
+	</form>
+    </div>
+    
+    <script>
+		
+		let distance;  // declarinng it asd a gloval variable
+		var distance_km;
+		var travel_time
+		var sstart;
+		var dend;
+		var total_rent;  // rent that passenger needs to be paid 
+        // Initialize the map
+        const map = L.map('map').setView([40.712776, -74.005974], 7); // Default center (New York City)
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Fetch route from GraphHopper and display it
+        function getRoute(start, end) {
+            const graphhopperApiKey = '72c9b04c-db5d-4217-b135-79d5d5541246';
+            const url = `https://graphhopper.com/api/1/route?point=${start}&point=${end}&vehicle=car&locale=en&key=${graphhopperApiKey}&points_encoded=false`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.paths && data.paths.length > 0) {
+                        const path = data.paths[0];
+                        const points = path.points.coordinates;
+                        const route = points.map(point => [point[1], point[0]]); // Swap lat and lng
+						distance = path.distance;  // distance is comming into meters so convert to km by meter/1000
+						distance_km= (distance/1000).toFixed(2)
+						total_rent = (distance_km*13);
+						travel_time = path.time;  // fethis total travel time in sec
+						console.log(travel_time);
+						
+						document.getElementById("display_distance").innerHTML = distance_km;   
+						document.getElementById("display_rent").innerHTML = Math.round(total_rent);
+						document.getElementById("travel_time").innerHTML = Math.round(travel_time/3600); 
+						
+                        // Draw the route on the map
+                        L.polyline(route, { color: 'blue' }).addTo(map);
+
+                        // Fit the map to the route
+                        map.fitBounds(L.polyline(route).getBounds());
+                    } else {
+                        console.error('No route found');
+                    }
+                })
+                .catch(error => console.error('Error fetching route:', error));
+        }
+        // getting lat and lng from url
+         function initMap() {
+            // Get latitude and longitude from URL parameters
+            var urlParams = new URLSearchParams(window.location.search);
+            var slat = parseFloat(urlParams.get('slat'));
+            var slng = parseFloat(urlParams.get('slng'));
+            var dlat = parseFloat(urlParams.get('dlat'));
+            var dlng = parseFloat(urlParams.get('dlng'));
+            sstart = slat+ ","+ slng;
+			dend = dlat+ "," + dlng;
+			
+		}
+			
+			
+        // Example usage with fixed coordinates (New York City to Los Angeles)
+        initMap();
+        getRoute(sstart,dend);
+        
+       
+        console.log(distance);
+
+        
+    </script>
+    
+    
+</body>
+</html>
