@@ -70,16 +70,16 @@ public class MapService {
 	            JsonNode positionNode2 = rootNode2.path("results").path(0).path("position");
 	            dlat = positionNode2.path("lat").asDouble();
 	            dlng = positionNode2.path("lon").asDouble();
+
+
+	            System.out.println("Sucessfully completed");
 	            
-	            // storing aource and destination lat and lng in DB
-//	            savePosition(slat,slng,dlat,dlng,saddress,daddress);
-	            
-//	            return "Latitude: " + lat + ", Longitude: " + lon;
-//	            return "redirect:http://localhost:8080/getRouteUrl/{10}";
-	            return "redirect:http://localhost:8080/route?slat=" + slat + "&slng=" + slng + "&dlat=" + dlat + "&dlng=" +dlng;
+//	            return "redirect:http://localhost:8080/route?slat=" + slat + "&slng=" + slng + "&dlat=" + dlat + "&dlng=" +dlng;
+	            return "{\"slat\": " + slat + ", \"slng\": " + slng + ", \"dlat\": " + dlat + ", \"dlng\": " + dlng + "}";
+	            // above response is for websocket
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            return "Error parsing response";
+	            return "{\"error\": \"Error parsing response\"}";
 	        }
 	    }
 	    

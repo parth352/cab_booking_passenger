@@ -1,8 +1,11 @@
 package myproject.example.myproject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,11 +14,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import myproject.example.myproject.entity.Position;
 import myproject.example.myproject.service.MapService;
 
 @Controller
+@CrossOrigin(origins = "http://localhost")
+@RequestMapping("/app")
 public class MyController {
 	
 	@Autowired
@@ -43,17 +50,32 @@ public class MyController {
     }
   
     
-//    @GetMapping("/getCoordinates")
-//    public String getCoordinates(@RequestParam String saddress, @RequestParam String daddress) {
-//        mapService.getCoordinates(saddress,daddress);
-//        return "location.jsp";
-//    }
-    
     @GetMapping("/getCoordinates")
     public String getCoordinates(@RequestParam String saddress, @RequestParam String daddress) {
 //        mapService.getCoordinates(saddress,daddress);
 //        return "route.html";
+    	System.out.print("getCoordinates api hit.");
         return mapService.getCoordinates(saddress,daddress);
+    }
+    
+    @MessageMapping("/sendCoordinates")
+    @SendTo("/topic/response")
+    public String sendCoordinates(String message ) {
+         try {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(message);
+        String saddress = jsonNode.get("saddress").asText();
+        String daddress = jsonNode.get("daddress").asText();
+
+        System.out.print("sendCoordinates api hit.");
+        String response = mapService.getCoordinates(saddress, daddress);
+        System.out.print("function working completed.");
+        
+        return response;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return "{\"error\": \"Error parsing message\"}";
+    }
     }
     
    /////////////////////////////////////////////////////////////////////
@@ -66,9 +88,17 @@ public class MyController {
     public String getRoute() {
     	return "route.html";
     }
-    @PostMapping("/confirm")
+//    @PostMapping("/confirm")
+//    public String postConfirmRide() {
+//    	return mapService.postConfirmRide();
+//    }
+// 
+    
+    @MessageMapping("/confirm")    // for websocket
+//    @SendTo("/topic/response")
     public String postConfirmRide() {
-    	return mapService.postConfirmRide();
+    	mapService.postConfirmRide();
+    	return "successfull";
+//    	return"{ \\\"Error parsing response\\\"}";
     }
- 
 }
