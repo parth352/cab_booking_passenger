@@ -84,8 +84,13 @@ public class MapService {
 	    }
 	    
 	    public String postConfirmRide() {  // only stores data in database if user press confirm ride
-	    	 savePosition(slat,slng,dlat,dlng,sadd,dadd);
-	    	return "location.jsp"; 
+	    	try{
+	    		savePosition(slat,slng,dlat,dlng,sadd,dadd);
+	    		return "{\"slat\": " + slat + ", \"slng\": " + slng + ", \"dlat\": " + dlat + ", \"dlng\": " + dlng + "}";
+	    	} catch (Exception e) {
+	    		e.printStackTrace();  
+	    		 return "{\"error\": \"Error parsing response\"}";
+	    	  }
 	    }
 //////////////////////////////////////////////////////////////////////////////	
 	    

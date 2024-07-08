@@ -50,13 +50,13 @@ public class MyController {
     }
   
     
-    @GetMapping("/getCoordinates")
-    public String getCoordinates(@RequestParam String saddress, @RequestParam String daddress) {
-//        mapService.getCoordinates(saddress,daddress);
-//        return "route.html";
-    	System.out.print("getCoordinates api hit.");
-        return mapService.getCoordinates(saddress,daddress);
-    }
+//    @GetMapping("/getCoordinates")
+//    public String getCoordinates(@RequestParam String saddress, @RequestParam String daddress) {
+////        mapService.getCoordinates(saddress,daddress);
+////        return "route.html";
+//    	System.out.print("getCoordinates api hit.");
+//        return mapService.getCoordinates(saddress,daddress);
+//    }
     
     @MessageMapping("/sendCoordinates")
     @SendTo("/topic/response")
@@ -95,10 +95,17 @@ public class MyController {
 // 
     
     @MessageMapping("/confirm")    // for websocket
-//    @SendTo("/topic/response")
+    @SendTo("/topic/drivers")
     public String postConfirmRide() {
-    	mapService.postConfirmRide();
-    	return "successfull";
+    	try {
+    		String response = mapService.postConfirmRide();
+    		System.out.println(response);
+    		return response;
+    	} catch (Exception e) {
+            e.printStackTrace();
+            return "{\"error\": \"Error parsing message\"}";
+        }
+    
 //    	return"{ \\\"Error parsing response\\\"}";
     }
 }
